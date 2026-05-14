@@ -18,7 +18,9 @@ class Order(CommonModel):
     table = models.ForeignKey('table.Table', on_delete=models.CASCADE, related_name='orders')
     waiter = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     customer_quantity = models.IntegerField()
-    status = models.CharField(max_length=50, choices=OrderStatusChoices, default='open')    
+    status = models.CharField(max_length=50, choices=OrderStatusChoices, default='open')
+    raw_price = models.DecimalField(decimal_places=2, max_digits=20)
+    price = models.DecimalField(decimal_places=2, max_digits=20)
 class OrderItem(CommonModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     menu_item = models.ForeignKey('inventory.MenuItem', on_delete=models.CASCADE)

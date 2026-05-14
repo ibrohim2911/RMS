@@ -1,6 +1,9 @@
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import status
 from .models import MenuCategory, MenuItem, Resource, MenuItemResource, inventoryCategory, Producer, ResourceItem, StorageLocation
 from .serializers import MenuCategorySerializer, MenuItemSerializer, ResourceSerializer, MenuItemResourceSerializer, inventoryCategorySerializer, ProducerSerializer, ResourceItemSerializer, StorageLocationSerializer
+from rest_framework.decorators import action
 class MenuCategoryViewSet(viewsets.ModelViewSet):
     queryset = MenuCategory.objects.all()
     serializer_class = MenuCategorySerializer
@@ -11,6 +14,20 @@ class MenuCategoryViewSet(viewsets.ModelViewSet):
         elif self.action in ['list', 'retrieve']:
             self.required_permission = 'view_menu_categories'
         return super().get_permissions()
+    @action(methods=['post'], detail=True)
+    def change_category_to_change_menu(self, request, pk=None):
+        default_printer = request.data.get("default_printer")
+        default_status = request.data.get("default_status")
+        category = self.get_object()
+        category.default_printer.set(default_printer)
+        category.default_status.set(default_status)
+        menu_items = MenuItem.objects.filter(menu_category=category)
+        for menu_item in menu_items:
+            menu_item.printer = default_printer
+            menu_item.order_status = default_status
+            menu_item.save()
+        serializer = MenuCategorySerializer(category)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 class MenuItemViewSet(viewsets.ModelViewSet):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer

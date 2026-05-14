@@ -21,6 +21,7 @@ import table.urls
 import order.urls
 import log.urls
 import hardware.urls
+import inventory.urls
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path('api/orders/', include(order.urls)),
     path('api/logs/', include(log.urls)),
     path('api/hardware/', include(hardware.urls)),
+    path('api/inventory/', include(inventory.urls)),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
