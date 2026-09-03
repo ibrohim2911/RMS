@@ -21,6 +21,9 @@ class Order(CommonModel):
     status = models.CharField(max_length=50, choices=OrderStatusChoices, default='open')
     raw_price = models.DecimalField(decimal_places=2, max_digits=20)
     price = models.DecimalField(decimal_places=2, max_digits=20)
+    inventory_deducted = models.BooleanField(default=False)
+    is_synced = models.BooleanField(default=False)
+
 class OrderItem(CommonModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     menu_item = models.ForeignKey('inventory.MenuItem', on_delete=models.CASCADE)
@@ -28,3 +31,4 @@ class OrderItem(CommonModel):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     orderer = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='ordered_items')
     is_deleted = models.BooleanField(default=False)
+    is_synced = models.BooleanField(default=False)

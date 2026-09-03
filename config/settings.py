@@ -11,9 +11,24 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env(
+    SERVER_ROLE=(str, 'LOCAL'),
+    BRANCH_API_KEY=(str, ''),
+    CLOUD_SYNC_URL=(str, 'http://localhost:8000/api/sync/orders/'),
+    DEBUG=(bool, True)
+)
+
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+SERVER_ROLE = env('SERVER_ROLE')
+BRANCH_API_KEY = env('BRANCH_API_KEY')
+CLOUD_SYNC_URL = env('CLOUD_SYNC_URL')
 
 
 # Quick-start development settings - unsuitable for production
@@ -23,7 +38,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-g#n0l!on1=sdd_)@hngn7^z8wc@8!8div5h!!ac-siab$(6ly@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -31,6 +46,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,6 +62,7 @@ INSTALLED_APPS = [
     'users',
     'log',
     'hardware',
+    'channels',
     
 ]
 
@@ -80,6 +97,13 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.Argon2PasswordHasher',

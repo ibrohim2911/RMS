@@ -56,6 +56,7 @@ class Permission(models.Model):
 class User(AbstractUser):
     pin = models.IntegerField(unique=True, null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
+    restaurant = models.ForeignKey('common.Restaurant', on_delete=models.CASCADE, null=True, blank=True, related_name='users')
     phone_number = models.CharField(max_length=20, unique=True)
     c_at = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=255)

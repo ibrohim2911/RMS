@@ -2,6 +2,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
+from django.db import transaction
+from django.conf import settings
+from common.authentication import BranchAPIKeyAuthentication
 from .models import Order, OrderItem, OrderPayment
 from .serializers import OrderSerializer, OrderItemSerializer, OrderPaymentSerializer
 from log.models import Log
@@ -101,4 +105,52 @@ class OrderPaymentViewSet(viewsets.ModelViewSet):
         elif self.action in ['list', 'retrieve']:
             self.required_permission = 'view_order_payments'
         return super().get_permissions()
+
+class OrderSyncView(APIView):
+    authentication_classes = [BranchAPIKeyAuthentication]
+    
+    def post(self, request):
+        if settings.SERVER_ROLE != 'CLOUD':
+            return Response({"error": "Sync only available on CLOUD role."}, status=403)
+            
+        restaurant = request.auth
+        orders_data = request.data
+        
+        synced_count = 0
+        with transaction.atomic():
+            for order_data in orders_data:
+                items_data = order_data.pop('items', [])
+                payments_data = order_data.pop('payments', [])
+                
+                order_data['restaurant_id'] = restaurant.id
+                order_id = order_data.pop('id')
+                
+                order, created = Order.objects.update_or_create(
+                    id=order_id,
+                    defaults=order_data
+                )
+                
+                for item_data in items_data:
+                    item_data['restaurant_id'] = restaurant.id
+                    item_id = item_data.pop('id')
+                    item_data.pop('order', None)
+                    OrderItem.objects.update_or_create(
+                        id=item_id,
+                        order=order,
+                        defaults=item_data
+                    )
+                
+                for payment_data in payments_data:
+                    payment_data['restaurant_id'] = restaurant.id
+                    payment_id = payment_data.pop('id')
+                    payment_data.pop('order', None)
+                    OrderPayment.objects.update_or_create(
+                        id=payment_id,
+                        order=order,
+                        defaults=payment_data
+                    )
+                
+                synced_count += 1
+                
+        return Response({"status": "success", "synced_count": synced_count}, status=201)
     

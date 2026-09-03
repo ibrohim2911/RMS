@@ -5,8 +5,14 @@ name = "pypi"
 
 [packages]
 djangorestframework = "*"
-django = {extras = ["argon2"], version = "*"}
 drf-spectacular = "*"
+python-escpos = "*"
+channels = "*"
+daphne = "*"
+websockets = "*"
+django = "==5.0.*"
+django-environ = "*"
+requests = "*"
 
 [dev-packages]
 
