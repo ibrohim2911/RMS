@@ -35,7 +35,10 @@ class MenuCategory(CommonModel):
     name = models.CharField(max_length=255)
     default_status = models.ManyToManyField(OrderStatus,blank=True)
     default_printer = models.ManyToManyField('hardware.Printer', blank=True, related_name='menu_categories')
-
+    on_menu = models.BooleanField(default=True)
+    class Meta:
+        def __str__(self):
+            return f'{self.name}'
 class MenuItem(CommonModel):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
